@@ -286,7 +286,6 @@ usage examples:
     except IndexError:
         pass
 
-    # Do bc math
-    # echo "3.4+7/8-(5.94*3.14)" | bc
-    print shell('echo "'+" ".join(args)+'" | bc -l', shell="True").strip()
+    # Evaluate argument as Python math
+    print eval(" ".join(args))
 
