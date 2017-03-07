@@ -4,6 +4,14 @@ I got tired of opening a browser everytime I had to convert something, usually f
 
 ## Installation
 
+Copy-pastable install
+
+    git clone https://github.com/charnley/convert-in-terminal.git
+    cd convert-in-terminal
+    pip install -r requirements.txt
+    ln -rs ./convert.py ~/bin/c
+    chmod +x ~/bin/c
+
 My setup is a I have a symbolic link in my `~/bin/` folder for easy usage
 
     ln -rs <path to git folder>/convert.py ~/bin/c
@@ -21,7 +29,7 @@ currency
 energy
 
     $ c 50 ev in kcal
-    2.1682057603 kcal
+    1153.04611723 kcal
 
 more to come
 
