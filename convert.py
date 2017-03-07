@@ -240,7 +240,20 @@ def shell(cmd, shell=False):
 
 def ask_wolfram_alpha(question):
 
-    import pprint
+    API_ERROR = """
+Invalid API key.
+
+1) Creat an account at
+https://developer.wolframalpha.com/portal/signin.html
+
+2) Create an API at
+https://developer.wolframalpha.com/portal/apisignup.htm
+
+after creating an APP API, dump the key in
+
+~/.wolfram_api_key
+
+"""
 
     try:
         f = os.path.expanduser("~/.wolfram_api_key")
@@ -262,21 +275,23 @@ def ask_wolfram_alpha(question):
     # Parse WA
 
     success = data["queryresult"]["@success"]
+    error = data["queryresult"]["@error"]
+
+    if error == "true":
+        quit(API_ERROR)
 
     if success == "false":
-        ndidyoumean = data["queryresult"]["didyoumeans"]["@count"]
-        print "Did you mean:"
-        print data["queryresult"]["didyoumeans"]['didyoumean']["#text"],"?"
-        quit()
+        quit("Sorry Wolfram Alpha did not understand your question")
 
-    else:
 
-        print data["queryresult"]["pod"][1]["subpod"]["plaintext"]
+    # TODO format the pod structure
+    # for pid in data["queryresult"]["pod"]:
+    #     print pid["subpod"]["plaintext"]
 
-        # for pid in data["queryresult"]["pod"]:
-        #     print pid["subpod"]["plaintext"]
+    # TODO format the | columns from the output
 
-        quit()
+    print data["queryresult"]["pod"][1]["subpod"]["plaintext"]
+    quit()
 
 
 def find_converter(args):
@@ -339,7 +354,7 @@ Math
 
     42*5/80.0
 
-Question
+Question (Using wolfram alpha)
 
     What is the temperature in Chicago?
 
