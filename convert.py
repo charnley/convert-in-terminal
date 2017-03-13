@@ -12,6 +12,7 @@
 # meter in inches
 # m in in
 
+from __future__ import print_function
 from subprocess import Popen, PIPE
 import sys
 import os
@@ -223,7 +224,7 @@ energies_dictionary = {}
 energies_dictionary["hartree"] = "au"
 energies_dictionary["kcal"] = "kcal/mol"
 
-energies_keys = energies.keys() + energies_dictionary.keys()
+energies_keys = list(energies.keys()) + list(energies_dictionary.keys())
 
 
 def shell(cmd, shell=False):
@@ -290,7 +291,7 @@ after creating an APP API, dump the key in
 
     # TODO format the | columns from the output
 
-    print data["queryresult"]["pod"][1]["subpod"]["plaintext"]
+    print(data["queryresult"]["pod"][1]["subpod"]["plaintext"])
     quit()
 
 
@@ -318,7 +319,7 @@ def convert_currency(value, fr, to):
     google = shell('wget -qO- "http://www.google.com/finance/converter?a='+value+'&from='+fr+'&to='+to+'" | sed "/res/!d;s/<[^>]*>//g";', shell=True)
     google = google.strip()
     if google == "": exit("Could not recognize currency: "+" ".join(args))
-    print google
+    print(google)
 
 
 def convert_energy(value, unit_a, unit_b):
@@ -331,7 +332,7 @@ def convert_energy(value, unit_a, unit_b):
 
     value = float(value)
     value = value*energies[unit_a][unit_b]
-    print value, unit_b
+    print(str(value) + str(unit_b))
 
 
 if __name__ == '__main__':
@@ -376,6 +377,4 @@ Question (Using wolfram alpha)
         quit()
 
     # Evaluate argument as Python math
-    print eval(" ".join(args))
-
-
+    print(eval(" ".join(args)))
