@@ -9,7 +9,7 @@ Copy-pastable install
     git clone https://github.com/charnley/convert-in-terminal.git
     cd convert-in-terminal
     pip install -r requirements.txt
-    ln -rs ./convert.py ~/bin/c
+    ln -si `pwd`/convert.py ~/bin/c
     chmod +x ~/bin/c
 
 My setup is a I have a symbolic link in my `~/bin/` folder for easy usage
