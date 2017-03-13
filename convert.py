@@ -12,6 +12,7 @@
 # meter in inches
 # m in in
 
+from __future__ import print_function
 from subprocess import Popen, PIPE
 import sys
 import os
@@ -20,6 +21,9 @@ import re
 
 import urllib
 import xmltodict
+
+from utils import CaseInsensitiveDict
+
 
 try:
     # For Python 3.0 and later
@@ -205,25 +209,17 @@ currencies["ZWL"] = "Zimbabwean Dollar (2009) (ZWL)"
 # TODO KiloJoule, cm**(-1)
 # http://users.mccammon.ucsd.edu/~dzhang/energy-unit-conv-table.html
 
-energies = {}
-energies["au"] = {}
-energies["ev"] = {}
-energies["kcal/mol"] = {}
+# For each energy unit, we note it's value in Joule
+energies = CaseInsensitiveDict()
+energies["J"] = 1
+energies["au"] = 4.359745e-18
+energies["eV"] = 1.6021766e-19
+energies["kcal/mol"] = 6.9476e-21
 
-energies["au"]["ev"] = 27.211396641
-energies["ev"]["au"] = 1.0/energies["au"]["ev"]
-
-energies["au"]["kcal/mol"] = 627.509 # kcal mol-1
-energies["kcal/mol"]["au"] = 1.0/energies["au"]["kcal/mol"]
-
-energies["kcal/mol"]["ev"] = 0.0433634
-energies["ev"]["kcal/mol"] = 1.0/energies["kcal/mol"]["ev"]
-
-energies_dictionary = {}
-energies_dictionary["hartree"] = "au"
-energies_dictionary["kcal"] = "kcal/mol"
-
-energies_keys = energies.keys() + energies_dictionary.keys()
+# Alternative names
+energies["hartree"] = energies["au"]
+energies["Ha"] = energies["au"]
+energies["kcal"] = energies["kcal/mol"]
 
 
 def shell(cmd, shell=False):
@@ -290,7 +286,7 @@ after creating an APP API, dump the key in
 
     # TODO format the | columns from the output
 
-    print data["queryresult"]["pod"][1]["subpod"]["plaintext"]
+    print(data["queryresult"]["pod"][1]["subpod"]["plaintext"])
     quit()
 
 
@@ -301,7 +297,7 @@ def find_converter(args):
     unit_b = args[3]
 
     # Energy
-    if unit_a in energies_keys and unit_b in energies_keys:
+    if unit_a in energies and unit_b in energies:
         convert_energy(value, unit_a, unit_b)
         quit()
 
@@ -318,20 +314,14 @@ def convert_currency(value, fr, to):
     google = shell('wget -qO- "http://www.google.com/finance/converter?a='+value+'&from='+fr+'&to='+to+'" | sed "/res/!d;s/<[^>]*>//g";', shell=True)
     google = google.strip()
     if google == "": exit("Could not recognize currency: "+" ".join(args))
-    print google
+    print(google)
 
 
 def convert_energy(value, unit_a, unit_b):
-
-    if unit_a in energies_dictionary.keys():
-        unit_a = energies_dictionary[unit_a]
-
-    if unit_b in energies_dictionary.keys():
-        unit_b = energies_dictionary[unit_b]
-
     value = float(value)
-    value = value*energies[unit_a][unit_b]
-    print value, unit_b
+    conversion_factor = energies[unit_a] / energies[unit_b]
+    value = value*conversion_factor
+    print("{} {}".format(value, unit_b))
 
 
 if __name__ == '__main__':
@@ -376,6 +366,4 @@ Question (Using wolfram alpha)
         quit()
 
     # Evaluate argument as Python math
-    print eval(" ".join(args))
-
-
+    print(eval(" ".join(args)))
