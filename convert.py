@@ -19,21 +19,12 @@ import os
 import numpy
 import re
 
-import urllib
-import xmltodict
-
-from utils import CaseInsensitiveDict
-
-
-try:
-    # For Python 3.0 and later
-    from urllib.request import urlopen
-except ImportError:
-    # Fall back to Python 2's urllib2
-    from urllib2 import urlopen
+import requests
+from requests.structures import CaseInsensitiveDict
+from bs4 import BeautifulSoup
 
 
-currencies = {}
+currencies = CaseInsensitiveDict()
 currencies["AED"] = "United Arab Emirates Dirham (AED)"
 currencies["AFN"] = "Afghan Afghani (AFN)"
 currencies["ALL"] = "Albanian Lek (ALL)"
@@ -260,18 +251,19 @@ after creating an APP API, dump the key in
     except IOError:
         exit('Could not find .wolfram_api_key in your home directory')
 
-    question = urllib.quote_plus(question)
-    url = "http://api.wolframalpha.com/v2/query?input="+question+"&appid="+wa_key+"&format=plaintext"
 
-    file = urlopen(url)
-    data = file.read()
-    file.close()
-    data = xmltodict.parse(data)
+    # Query wolfram alpha
+    url =  "http://api.wolframalpha.com/v2/query"
+    params = {'appid': wa_key,
+              'input':question,
+              'format': 'plaintext'}
+    r = requests.get(url, params=params)
+    data = BeautifulSoup(r.content, "lxml")
 
     # Parse WA
 
-    success = data["queryresult"]["@success"]
-    error = data["queryresult"]["@error"]
+    success = data.queryresult['success']
+    error = data.queryresult['error']
 
     if error == "true":
         quit(API_ERROR)
@@ -286,7 +278,9 @@ after creating an APP API, dump the key in
 
     # TODO format the | columns from the output
 
-    print(data["queryresult"]["pod"][1]["subpod"]["plaintext"])
+    output = data.find(title='Result').get_text().strip()
+    print(output)
+
     quit()
 
 
@@ -302,7 +296,7 @@ def find_converter(args):
         quit()
 
     # Currencey
-    if unit_a in currencies.keys() and unit_b in currencies.keys():
+    if unit_a in currencies and unit_b in currencies:
         convert_currency(value, unit_a, unit_b)
         quit()
 
@@ -311,10 +305,18 @@ def find_converter(args):
 
 def convert_currency(value, fr, to):
     # http://www.linux-magazine.com/Online/Blogs/Productivity-Sauce/Simple-Bash-Currency-Converter
-    google = shell('wget -qO- "http://www.google.com/finance/converter?a='+value+'&from='+fr+'&to='+to+'" | sed "/res/!d;s/<[^>]*>//g";', shell=True)
-    google = google.strip()
-    if google == "": exit("Could not recognize currency: "+" ".join(args))
-    print(google)
+    url = "http://www.google.com/finance/converter"
+    params = {'a':value,
+              'from':fr,
+              'to':to}
+    r = requests.get(url, params=params)
+
+    google_page = r.content # Get the html page
+    parsed = BeautifulSoup(google_page, "lxml") # parse it with beautiful soup
+    conversion = parsed.find(id='currency_converter_result').get_text()
+    conversion = conversion.strip()
+    if conversion == "": exit("Could not recognize currency: "+" ".join(args))
+    print(conversion)
 
 
 def convert_energy(value, unit_a, unit_b):
