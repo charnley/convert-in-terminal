@@ -250,6 +250,7 @@ after creating an APP API, dump the key in
         wa_key = wa_key.strip()
         f.close()
     except IOError:
+        print(API_ERROR)
         exit('Could not find .wolfram_api_key in your home directory')
 
 
