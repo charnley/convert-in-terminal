@@ -13,16 +13,17 @@
 # m in in
 
 from __future__ import print_function
-from subprocess import Popen, PIPE
-import sys
+
+import json
 import os
-import numpy
 import re
+import sys
+from subprocess import PIPE, Popen
 
+import numpy
 import requests
-from requests.structures import CaseInsensitiveDict
 from bs4 import BeautifulSoup
-
+from requests.structures import CaseInsensitiveDict
 
 currencies = CaseInsensitiveDict()
 currencies["AED"] = "United Arab Emirates Dirham (AED)"
@@ -297,7 +298,7 @@ def find_converter(args):
 
     # Currencey
     if unit_a in currencies and unit_b in currencies:
-        convert_currency(value, unit_a, unit_b)
+        convert_currency_currencyconvertapi(value, unit_a, unit_b)
         quit()
 
     return False
@@ -318,6 +319,21 @@ def convert_currency(value, fr, to):
     if conversion == "": exit("Could not recognize currency: "+" ".join(args))
     print(conversion)
 
+
+def convert_currency_currencyconvertapi(val, fr, to):
+
+    fmt = "_".join([fr,to])
+    params = {"q": fmt, "compact": "ultra"}
+    url = "http://free.currencyconverterapi.com/api/v3/convert"
+
+    # get r.url in json format
+    r = requests.get(url, params=params)
+    rate = r.json()
+    rate = rate[fmt.upper()]
+
+    print(rate*float(val), to)
+
+    return
 
 def convert_energy(value, unit_a, unit_b):
     value = float(value)
@@ -358,10 +374,14 @@ Question (Using wolfram alpha)
     if len(args) == 0:
         exit(USAGE)
 
-    if "in" in args:
+    if "in" in args or "to" in args:
         converted = find_converter(args)
-        if not converted:
-            ask_wolfram = True
+
+    if len(args) == 2 and args[1] in currencies:
+        args += ["in", "dkk"]
+        converted = find_converter(args)
+        quit()
+
 
     if "?" in args_string or ask_wolfram:
         ask_wolfram_alpha(" ".join(args))
