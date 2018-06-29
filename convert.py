@@ -235,7 +235,7 @@ Invalid API key.
 https://developer.wolframalpha.com/portal/signin.html
 
 2) Create an API at
-https://developer.wolframalpha.com/portal/apisignup.htm
+https://developer.wolframalpha.com/portal/myapps
 
 after creating an APP API, dump the key in
 
